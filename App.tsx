@@ -923,6 +923,9 @@ export default function App() {
   const [activePlaylist, setActivePlaylist] = useState<Playlist | null>(null);
   const [suggestedHistory, setSuggestedHistory] = useState<Set<string>>(new Set());
 
+  // Location Permission State
+  const [locationError, setLocationError] = useState<string | null>(null);
+
   // Audio State (Pure HTML5 Audio)
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const [currentTime, setCurrentTime] = useState(0);
@@ -944,23 +947,43 @@ export default function App() {
     loadData();
   }, []);
 
-  // Init Weather
+  // Init Weather with Permission Handling
   useEffect(() => {
     if ("geolocation" in navigator) {
-      navigator.geolocation.getCurrentPosition(async (position) => {
-        try {
-          const data = await fetchWeather(position.coords.latitude, position.coords.longitude);
-          setWeather(data);
-        } catch (e) {
-          setWeather({
-            temperature: 20,
-            conditionCode: 1,
-            conditionText: "Parçalı Bulutlu",
-            isDay: true,
-            locationName: "İstanbul, Kadıköy"
-          });
+      navigator.geolocation.getCurrentPosition(
+        async (position) => {
+          try {
+            const data = await fetchWeather(position.coords.latitude, position.coords.longitude);
+            setWeather(data);
+            setLocationError(null); // Clear any previous errors
+          } catch (e) {
+            console.error("Weather fetch error:", e);
+            // Fallback weather data
+            setWeather({
+              temperature: 20,
+              conditionCode: 1,
+              conditionText: "Parçalı Bulutlu",
+              isDay: true,
+              locationName: "Varsayılan Konum"
+            });
+          }
+        },
+        (error) => {
+          // Handle geolocation errors
+          console.error("Geolocation error:", error);
+          if (error.code === error.PERMISSION_DENIED) {
+            setLocationError("Konum izni reddedildi. Lütfen tarayıcı ayarlarınızdan konum erişimini açın.");
+          } else if (error.code === error.POSITION_UNAVAILABLE) {
+            setLocationError("Konum bilgisi alınamadı. Lütfen GPS'inizi kontrol edin.");
+          } else if (error.code === error.TIMEOUT) {
+            setLocationError("Konum isteği zaman aşımına uğradı. Lütfen tekrar deneyin.");
+          } else {
+            setLocationError("Konum alınırken bir hata oluştu.");
+          }
         }
-      });
+      );
+    } else {
+      setLocationError("Tarayıcınız konum hizmetlerini desteklemiyor.");
     }
   }, []);
 
@@ -1293,6 +1316,77 @@ export default function App() {
       <audio ref={audioRef} crossOrigin="anonymous" />
 
       <AnimationStyles />
+
+      {/* Location Error Screen */}
+      {locationError && (
+        <div className="fixed inset-0 z-[100] bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex items-center justify-center p-6">
+          <div className="max-w-2xl w-full">
+            {/* Error Card */}
+            <div className="relative">
+              {/* Animated gradient border */}
+              <div className="absolute -inset-1 bg-gradient-to-r from-pink-500 via-purple-500 to-blue-500 rounded-3xl opacity-75 blur-lg animate-pulse"></div>
+
+              <div className="relative bg-white/10 backdrop-blur-2xl border border-white/20 rounded-3xl p-8 md:p-12 shadow-2xl">
+                {/* Icon */}
+                <div className="flex justify-center mb-6">
+                  <div className="relative">
+                    <div className="absolute inset-0 bg-red-500/30 rounded-full blur-xl animate-pulse"></div>
+                    <div className="relative bg-red-500/20 backdrop-blur-xl border border-red-400/30 rounded-full p-6">
+                      <span className="material-symbols-outlined text-6xl text-red-400">location_off</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Title */}
+                <h2 className="text-3xl md:text-4xl font-bold text-white text-center mb-4">
+                  Konum İzni Gerekli
+                </h2>
+
+                {/* Error Message */}
+                <p className="text-lg text-white/80 text-center mb-8">
+                  {locationError}
+                </p>
+
+                {/* Instructions */}
+                <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-6 mb-8">
+                  <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
+                    <span className="material-symbols-outlined text-blue-400">info</span>
+                    Konum İznini Nasıl Açarım?
+                  </h3>
+                  <ol className="space-y-3 text-white/70">
+                    <li className="flex gap-3">
+                      <span className="font-bold text-blue-400">1.</span>
+                      <span>Tarayıcınızın adres çubuğundaki <strong className="text-white">kilit</strong> veya <strong className="text-white">bilgi</strong> ikonuna tıklayın</span>
+                    </li>
+                    <li className="flex gap-3">
+                      <span className="font-bold text-blue-400">2.</span>
+                      <span><strong className="text-white">Konum</strong> ayarını bulun ve <strong className="text-white">"İzin Ver"</strong> seçeneğini seçin</span>
+                    </li>
+                    <li className="flex gap-3">
+                      <span className="font-bold text-blue-400">3.</span>
+                      <span>Sayfayı yenileyin veya aşağıdaki butona tıklayın</span>
+                    </li>
+                  </ol>
+                </div>
+
+                {/* Retry Button */}
+                <button
+                  onClick={() => window.location.reload()}
+                  className="w-full bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white font-bold py-4 px-8 rounded-2xl shadow-xl hover:shadow-2xl hover:scale-[1.02] active:scale-95 transition-all duration-300 flex items-center justify-center gap-3"
+                >
+                  <span className="material-symbols-outlined text-2xl">refresh</span>
+                  <span>Tekrar Dene</span>
+                </button>
+
+                {/* Alternative Note */}
+                <p className="text-sm text-white/50 text-center mt-6">
+                  Konum izni vermek istemiyorsanız, varsayılan hava durumu ile devam edebilirsiniz.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       <Header view={view} setView={setView} theme={theme} onLogoClick={() => setShowLanding(true)} />
 
