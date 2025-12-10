@@ -1,0 +1,7 @@
+{
+  "name": "MeloWeather",
+  "description": "A zen, weather-adaptive music recommendation app powered by  AI ✦.",
+  "requestFramePermissions": [
+    "geolocation"
+  ]
+}
