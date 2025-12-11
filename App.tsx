@@ -867,6 +867,23 @@ const SettingsView = ({ preferences, setPreferences, theme, onSave }: any) => {
           />
         </div>
 
+        {/* Favorite Artists Input */}
+        <div>
+          <label className="block text-sm font-bold text-slate-500 uppercase tracking-wider mb-2">
+            Favori Sanatçılar <span className="text-xs font-normal text-slate-400">(Opsiyonel)</span>
+          </label>
+          <p className="text-xs text-slate-400 mb-3">
+            Sevdiğiniz sanatçıları virgülle ayırarak yazın. AI bu sanatçıların şarkılarını da listeye ekleyecek.
+          </p>
+          <input
+            type="text"
+            value={preferences.favoriteArtists || ''}
+            onChange={(e) => setPreferences({ ...preferences, favoriteArtists: e.target.value })}
+            className="w-full p-4 rounded-xl bg-white dark:bg-slate-900 border-2 border-slate-100 dark:border-slate-700 focus:border-primary outline-none font-medium text-slate-900 dark:text-white transition-colors"
+            placeholder="Örn: Tarkan, Sezen Aksu, Coldplay..."
+          />
+        </div>
+
         <button
           onClick={onSave}
           className="w-full bg-primary text-white font-bold py-4 rounded-xl shadow-lg hover:shadow-xl hover:scale-[1.02] transition-all"
@@ -887,7 +904,13 @@ export default function App() {
   const [weather, setWeather] = useState<WeatherData | null>(null);
   const [playlist, setPlaylist] = useState<Song[]>([]);
   const [loading, setLoading] = useState(false);
-  const [preferences, setPreferences] = useState<UserPreferences>({ genres: ["Pop", "Indie"], activity: "Relaxing", mood: "Happy", languages: ["Türkçe", "İngilizce"] });
+  const [preferences, setPreferences] = useState<UserPreferences>({
+    genres: ["Pop", "Indie"],
+    activity: "Relaxing",
+    mood: "Happy",
+    languages: ["Türkçe", "İngilizce"],
+    favoriteArtists: ""
+  });
 
   // Landing State
   const [showLanding, setShowLanding] = useState(true);

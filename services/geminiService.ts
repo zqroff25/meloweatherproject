@@ -178,6 +178,10 @@ export const generatePlaylist = async (
     ? `Do NOT include these specific songs (I already have them): ${excludeContext.songTitles.slice(0, 20).join(", ")}.`
     : "";
 
+  const favoriteArtistsStr = preferences.favoriteArtists && preferences.favoriteArtists.trim()
+    ? `IMPORTANT: The user loves these artists: ${preferences.favoriteArtists}. Include 3-5 songs from these artists in the playlist, but ONLY if they match the weather mood and vibe.`
+    : "";
+
   const prompt = `
     Act as a professional music curator. I need a playlist of REAL, EXISTING songs that can be found on Apple Music.
     
@@ -195,6 +199,8 @@ export const generatePlaylist = async (
     4. **DISCOVERY RULE**: Include at least 40% "Hidden Gems" (lesser known but great songs) and 60% Popular Hits.
     5. ACCURACY: Only suggest songs that actually exist.
     6. If "Türkçe" is preferred, prioritize high-quality Turkish Alternative/Indie (e.g., **Dedublüman**, Yüzyüzeyken Konuşuruz, Adamlar, Madrigal, Mabel Matiz) strictly matching the weather mood. Also specifically include Dedublüman hits like 'Gamzedeyim Deva Bulmam' or 'Belki'.
+    
+    ${favoriteArtistsStr}
     
     Exclusions:
     ${excludeSongsStr}

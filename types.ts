@@ -30,6 +30,7 @@ export interface UserPreferences {
   genres: string[];
   languages: string[];
   mood: string;
+  favoriteArtists?: string; // Optional: comma-separated list of favorite artists
 }
 
 export enum ViewState {
